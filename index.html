@@ -12,9 +12,9 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Credit Card Payment Calculator</h1>
+    <h1>Credit Card Payment Decision</h1>
     <p class="sub">
-      Click a payment option to view the total payoff time and total payment amount. Afterwards, please make your payment choice below this calculator.
+      Please take a look at the payment options below and consider your payment. Afterwards, please enter your choice below the payment information.
     </p>
   </header>
 
@@ -22,29 +22,25 @@
     <!-- Payment Options -->
     <section aria-labelledby="options-title">
       <h2 id="options-title" style="margin:0 0 8px; font-size:1.1rem;">
-        Choose Your Monthly Payment Amount
+        Monthly Payment Amount Options
       </h2>
 
       <div class="options">
         <label>
-          <input type="radio" name="payOption" value="1836.90">
+          <input type="radio" name="payOption" value="1836.90" disabled>
           Statement Balance (as of 02/01/2026): $1836.90
         </label>
         <label>
-          <input type="radio" name="payOption" value="1875.11">
+          <input type="radio" name="payOption" value="1875.11" disabled>
           Current Balance: $1875.11
         </label>
         <label>
-          <input type="radio" name="payOption" value="38.00">
+          <input type="radio" name="payOption" value="38.00" disabled>
           Minimum Payment Due: $38.00
         </label>
         <label>
-          <input type="radio" name="payOption" value="other">
-          Other Amount (Must be greater than $38):
-          <input id="paymentInput" type="number" min="38" max="1875.11" step="0.01" placeholder="Enter amount" />
-          <div id="errorMessage" style="color: #dc2626; font-size: 0.85rem; margin-top: 4px; display: none; font-weight: normal;">
-            ⚠️ Payment must be at least $38.00 (the minimum payment due)
-          </div>
+          <input type="radio" name="payOption" value="other" disabled>
+          Other Amount (Must be greater than $38)
         </label>
       </div>
 
@@ -74,100 +70,5 @@
   <footer>Demo Website for Research Use Only</footer>
 </div>
 
-<script>
-  let isTyping = false;
-  
-  // --- Constants (Oct 2025 update) ---
-  const STATEMENT_BALANCE = 1836.90;
-  const CURRENT_BALANCE   = 1875.11;
-  const MIN_PAYMENT       = 38.00;
-  const ANNUAL_RATE       = 0.21;
-  const MONTHLY_RATE      = ANNUAL_RATE / 12;
-
-  const paymentInput = document.getElementById('paymentInput');
-  const yearsOut     = document.getElementById('yearsOut');
-  const totalOut     = document.getElementById('totalOut');
-
-  function compute(payment){
-    const balance = CURRENT_BALANCE;
-    const monthlyPayment = Math.max(0, Number(payment) || 0);
-    if (monthlyPayment <= balance * MONTHLY_RATE) return { pay: monthlyPayment, years: Infinity, total: Infinity };
-    if (monthlyPayment >= balance) return { pay: monthlyPayment, years: 0, total: balance };
-    const months = Math.log(monthlyPayment / (monthlyPayment - MONTHLY_RATE * balance)) / Math.log(1 + MONTHLY_RATE);
-    const years = months / 12;
-    const total = monthlyPayment * months;
-    return { pay: monthlyPayment, years, total };
-  }
-
-  function updateDisplay(pay, total) {
-    const formattedTotal = total.toFixed(2);
-    totalOut.textContent = `$${formattedTotal}`;
-  }
-
-  function render(payment) {
-    if (!payment || isNaN(payment) || payment <= 0) return;
-
-    const { pay, years, total } = compute(payment);
-    updateDisplay(pay, total);
-
-    if (!isFinite(years)) {
-      yearsOut.textContent = "—";
-      return;
-    }
-
-    const totalMonths = Math.ceil(years * 12);
-    let timeText = "";
-
-    if (totalMonths <= 0) {
-      timeText = "0 months";
-    } else if (totalMonths < 12) {
-      timeText = totalMonths === 1 ? "1 month" : `${totalMonths} months`;
-    } else {
-      const wholeYears = Math.floor(totalMonths / 12);
-      const remainingMonths = totalMonths % 12;
-      if (remainingMonths === 0) {
-        timeText = wholeYears === 1 ? "1 year" : `${wholeYears} years`;
-      } else {
-        timeText = `${wholeYears} years and ${remainingMonths} months`;
-      }
-    }
-
-    yearsOut.textContent = totalMonths <= 12 ? timeText : `${timeText} (${totalMonths} months)`;
-  }
-
-  paymentInput.addEventListener('input', e => {
-    // Auto-select "Other Amount" radio when user types
-    const otherRadio = document.querySelector('input[name="payOption"][value="other"]');
-    if (otherRadio && !otherRadio.checked) {
-      otherRadio.checked = true;
-    }
-    
-    const val = parseFloat(e.target.value);
-    const errorMessage = document.getElementById('errorMessage');
-    
-    // Check if value is less than minimum
-    if (!isNaN(val) && val < MIN_PAYMENT) {
-      errorMessage.style.display = 'block';
-      // Don't render calculations for invalid amounts
-      return;
-    } else {
-      errorMessage.style.display = 'none';
-    }
-    
-    if (!isNaN(val)) render(val);
-  });
-
-  document.querySelectorAll('input[name="payOption"]').forEach(radio => {
-    radio.addEventListener('change', () => {
-      if (radio.value === 'other') {
-        const val = +paymentInput.value;
-        if (!val) return;
-        render(val);
-      } else {
-        render(+radio.value);
-      }
-    });
-  });
-</script>
 </body>
 </html>
